@@ -2,6 +2,8 @@ const express = require('express');
 const connectDb = require("./config/database");
 const cookieParser = require('cookie-parser');
 
+require("dotenv").config();
+
 const app = express();
 const port = 4000;
 
