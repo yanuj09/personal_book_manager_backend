@@ -10,18 +10,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    DOB: {
+    dob: {
       type: Date,
       required: true,
     },
     email: {
-      type: string,
+      type: String,
       required: true,
       unique: true,
     },
     password: {
-      type: password,
+      type: String,
       required: true,
+    },
+    profileImage: {
+      data: Buffer,
+      contentType: String,
     },
   },
   {
