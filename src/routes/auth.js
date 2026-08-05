@@ -9,13 +9,14 @@ authRouter.post(
   uploadImage.single("profileImage"),
   async (req, res) => {
     try {
-      const { firstName, lastName, dob, email, password } = req.body;
+      const { firstName, lastName, gender,dob, email, password } = req.body;
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const newUser = new User({
         firstName,
         lastName,
+        gender,
         dob,
         email,
         password: hashedPassword,
