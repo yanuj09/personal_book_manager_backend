@@ -1,4 +1,16 @@
-# /package-lock.json
-# /package.json
+node_modules/
 
-/node_modules
+# Secrets — .env.example is committed, .env never is
+.env
+.env.*
+!.env.example
+
+# Logs & OS noise
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
