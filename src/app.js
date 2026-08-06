@@ -11,17 +11,41 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 const port = process.env.PORT || 3567;
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+].filter(Boolean);
 
 
+// app.use(
+//   cors({
+//     origin: process.env.FRONTEND_URL || "http://localhost:3000",
+//     credentials: true,
+//     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   }),
+// );
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
+app.use(cookieParser());
 // Middleware to parse JSON body
 app.use(express.json());
-app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-  }),
-);
+
 
 const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile');
@@ -31,6 +55,14 @@ const bookRouter = require('./routes/books');
 app.use('/auth', authRouter);
 app.use('/profile', profileRouter);
 app.use('/books', bookRouter);
+
+app.use((err, req, res, next) => {
+  if (err && err.message === 'Not allowed by CORS') {
+    res.status(403).json({ message: 'CORS blocked for this origin' });
+    return;
+  }
+  next(err);
+});
 
 
 
