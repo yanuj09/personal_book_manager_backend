@@ -1,31 +1,42 @@
 const express = require('express');
 const connectDb = require("./config/database");
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 require("dotenv").config();
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000;
 
 
 // Middleware to parse JSON body
 app.use(express.json());
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    credentials: true,
+  }),
+);
 
 const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile');
 const bookRouter = require('./routes/books');
 
 
-app.use('/', authRouter);
-app.use('/' , profileRouter);
-app.use('/', bookRouter);
+app.use('/auth', authRouter);
+app.use('/profile', profileRouter);
+app.use('/books', bookRouter);
 
 
 
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 app.use('/*', (req, res) => {
-  res.send('Hello Nirahu!');
+  res.status(404).json({ message: 'Route not found' });
 });
 
 
