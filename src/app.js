@@ -1,31 +1,79 @@
 const express = require('express');
 const connectDb = require("./config/database");
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
-require("dotenv").config();
+require("dotenv").config({ override: true });
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is missing in .env');
+}
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 3567;
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+].filter(Boolean);
 
 
+// app.use(
+//   cors({
+//     origin: process.env.FRONTEND_URL || "http://localhost:3000",
+//     credentials: true,
+//     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   }),
+// );
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
+app.use(cookieParser());
 // Middleware to parse JSON body
 app.use(express.json());
-app.use(cookieParser());
+
 
 const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile');
 const bookRouter = require('./routes/books');
 
 
-app.use('/', authRouter);
-app.use('/' , profileRouter);
-app.use('/', bookRouter);
+app.use('/auth', authRouter);
+app.use('/profile', profileRouter);
+app.use('/books', bookRouter);
+
+app.use((err, req, res, next) => {
+  if (err && err.message === 'Not allowed by CORS') {
+    res.status(403).json({ message: 'CORS blocked for this origin' });
+    return;
+  }
+  next(err);
+});
 
 
 
 
-app.use('/*', (req, res) => {
-  res.send('Hello Nirahu!');
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// Catch-all 404 handler: runs only if no route above matched the request.
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 

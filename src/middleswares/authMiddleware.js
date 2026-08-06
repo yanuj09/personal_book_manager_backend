@@ -3,7 +3,13 @@ const User = require("../models/user");
 
 const userAuth = async (req, res, next) => {
   try {
-    const { token } = req.cookies;
+    const cookieToken = req.cookies?.token;
+    const authHeader = req.headers.authorization;
+    const bearerToken =
+      authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : null;
+    const token = cookieToken || bearerToken;
 
     if (!token) {
       res.status(401).json({ message: "Unauthorized: No token provided" });
@@ -12,18 +18,18 @@ const userAuth = async (req, res, next) => {
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    const userid = decodedToken.userId;
+    const userId = decodedToken.userId;
 
-    const user = await User.findById(userid);
+    const user = await User.findById(userId);
     if (!user) {
-      throw new Error("User not found");
+      res.status(401).json({ message: "Unauthorized: User not found" });
+      return;
     }
 
     req.user = user;
     next();
   } catch (err) {
-    console.error("Error in userAuth middleware:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(401).json({ message: "Unauthorized: Invalid or expired token" });
   }
 };
 
