@@ -3,10 +3,14 @@ const connectDb = require("./config/database");
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-require("dotenv").config();
+require("dotenv").config({ override: true });
+
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is missing in .env');
+}
 
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 3567;
 
 
 // Middleware to parse JSON body
@@ -35,7 +39,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.use('/*', (req, res) => {
+// Catch-all 404 handler: runs only if no route above matched the request.
+app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
