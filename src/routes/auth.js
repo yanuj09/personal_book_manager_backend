@@ -1,12 +1,10 @@
 const express = require("express");
 const authRouter = express.Router();
-const uploadImage = require("../middleswares/imageUpload");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 
 authRouter.post(
   "/signup",
-  uploadImage.single("profileImage"),
   async (req, res) => {
     try {
       const { firstName, lastName, gender,dob, email, password } = req.body;
@@ -20,7 +18,6 @@ authRouter.post(
         dob,
         email,
         password: hashedPassword,
-        profileImage: req.file ? req.file.buffer : null,
       });
 
       const savedUser = await newUser.save();
