@@ -13,7 +13,7 @@ const app = express();
 const port = process.env.PORT || 3567;
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'https://personal-book-manager-ui-neon.vercel.app/',
+  'https://personal-book-manager-ui-neon.vercel.app',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 
