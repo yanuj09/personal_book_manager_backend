@@ -1,34 +1,43 @@
 const express = require('express');
+const connectDb = require("./config/database");
+const cookieParser = require('cookie-parser');
+
+require("dotenv").config();
+
 const app = express();
 const port = 4000;
 
 
 // Middleware to parse JSON body
 app.use(express.json());
+app.use(cookieParser());
 
-app.get("/login" , (req,res) => {
+const authRouter = require('./routes/auth');
+const profileRouter = require('./routes/profile');
+const bookRouter = require('./routes/books');
 
-  const { username, password } = req.body;
 
-  if (username === "nirahu" && password === "1234") {
-    res.send("Login successful");
-  }
-})
+app.use('/', authRouter);
+app.use('/' , profileRouter);
+app.use('/', bookRouter);
 
-app.post("/signup" , (req,res) => {
 
-  const {firstName, lastName, DOB ,email, password} = req.body;
 
-  if (firstName && lastName && email && password) {
-    res.send(`Signup successful for ${firstName} ${lastName} with email ${email}`);
-  }
 
-})
-
-app.get('/', (req, res) => {
+app.use('/*', (req, res) => {
   res.send('Hello Nirahu!');
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-})
+
+connectDb().then(() => {
+  app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+  });
+}).catch((err) => {
+  console.error("Failed to connect to the database:", err);
+  process.exit(1); // Exit the process with failure
+});
+
+// app.listen(port, () => {
+//   console.log(`Server is running on http://localhost:${port}`);
+// })
